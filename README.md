@@ -1,7 +1,8 @@
 Analysis code for GRIPS 3D-GeDs
 ===============================
 
-Sample workflow
+Example workflow
+================
 
 Read in the data
 ----------------
@@ -30,11 +31,18 @@ list = [12, 13, 15, 16, 17, 18, 21, 22, 23, 25, 26, 27, 33, 35, 36, 37, 38,$
         40, 41, 42, 43, 45, 47, 51, 53, 55, 56, 57, 58, 60]
 make_spectra,adc,time,raw,cms,channels=list
 ```
+`cms` is the common-mode-subtracted spectrum.
 
 Analyze spectra
 ---------------
 ```
-roi,c51[35,*],xr=[0,1000]
-
+roi,cms[35,*],xr=[0,1000]
 ```
-`roi` is a crude interactive program.  Use left clicks to fit peaks and use a right click to exit out.
+`roi` is a crude interactive program.  Use left clicks to fit peaks and use a right click to exit out.  In this case,
+the fits indicate that the pedestal (0 keV) is at ADC bin 92 and the 59.5 keV Am-241 line is at ADC bin 260.  This is
+enough to get a calibration.
+```
+energy = getgain([92.,260.], [0,59.5])
+roi,cms[35,*],gain=energy,xr=[0,70]
+```
+Now, when we fit the Am-241 line, we can get the FWHM in energy units.  In this case, it comes out to 2.4 keV.
