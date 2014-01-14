@@ -2,3 +2,6 @@
 *.ps
 .DS_Store
 *.lnk
+data/
+*.sav
+*.csv
