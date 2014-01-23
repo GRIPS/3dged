@@ -28,6 +28,7 @@
 ;
 ; HISTORY:
 ;   2014-01-14, AYS: initial release
+;   2014-01-23, AYS: ignore zeros when fitting
 
 pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit,params=params
 
@@ -48,9 +49,12 @@ plot,t,y,xr=[0,10],$
 
 if keyword_set(fit) then begin
   index = min(where(y gt 0))
-  tt = t[index:1000]
   yy = y[index:1000]
   dyy = dy[index:1000]
+  use = where(yy gt 0 and dyy gt 0)
+  yy = yy[use]
+  dyy = dyy[use]
+  tt = (t[index:1000])[use]
 
   start = [1300., 150., 0.2, 1.07, 3.5]
   pp = mpfitexpr('P[0]+P[1]*SIN(2*!PI*(X-P[2])/P[3])*EXP(-(X-P[2])/P[4])', tt, yy, dyy, start, /quiet)
