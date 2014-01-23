@@ -9,23 +9,26 @@
 ;   xrange  optional - specifies the range to plot for x (highly recommended)
 ;   yrange  optional - specifies the range to plot for y (highly recommended)
 ;   xy      keyword - plots the y=x line for visual comparison
+;   zmax    optional - specify the level for the highest filled contour
 ;   _extra  all other keywords are passed through to the plot call
 ;
 ; OUTPUTS:
 ;
 ; HISTORY:
 ;   2014-01-14, AYS: initial release
+;   2014-01-23, AYS: added zmax optional parameter
 
-pro corrplot, x, y, xrange=xrange, yrange=yrange, xy=xy, _extra=_extra
+pro corrplot, x, y, xrange=xrange, yrange=yrange, xy=xy, _extra=_extra, zmax=zmax
 
 xrange = fcheck(xrange, [min(x), max(x)])
 yrange = fcheck(yrange, [min(y), max(y)])
 
 h = hist_2d(x, y, min1 = 0 < xrange[0], max1 = xrange[1], min2 = 0 < yrange[0], max2 = yrange[1])
+zmax = fcheck(zmax, max(h))
 
 loadct,0
 
-contour, h, xrange=xrange, yrange=yrange, /fill, levels=10^(findgen(31)/30*alog10(max(h))), _extra=_extra
+contour, h, xrange=xrange, yrange=yrange, /fill, levels=10^(findgen(31)/30*alog10(zmax)), _extra=_extra
 
 if keyword_set(xy) then begin
   hsi_linecolors
