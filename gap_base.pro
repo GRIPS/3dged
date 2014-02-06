@@ -16,7 +16,7 @@
 ;   offset  optional - shift the above vertical lines by this many milliseconds
 ;   fit     keyword - perform a fit to get the oscillation period and offset
 ;           function is P[0]+P[1]*SIN(2*!PI*(X-P[2])/P[3])*EXP(-(X-P[2])/P[4])
-;   sumglitch   includes glitched events (normally excluded)
+;   sumglitch   keyword - includes glitched events (normally excluded)
 ;   _extra  all other keywords are passed through to the plot call
 ;
 ; OUTPUTS:
@@ -30,7 +30,7 @@
 ; HISTORY:
 ;   2014-01-14, AYS: initial release
 ;   2014-01-23, AYS: ignore zeros when fitting
-;   2014-02-04, AYS: added rejection (default) and inclusion (optional) of glitched events
+;   2014-02-05, AYS: added rejection (default) and inclusion (optional) of glitched events
 
 pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit,params=params,sumglitch=sumglitch
 

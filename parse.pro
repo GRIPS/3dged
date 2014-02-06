@@ -22,7 +22,7 @@
 ;   2013-07-30, AYS: fixed bug with older formats
 ;   2013-07-31, AYS: fixed wrapping of incrementing counter at 8192, added keyword use_trigger_flag
 ;   2013-12-06, AYS: added swapshort keyword
-;   2014-02-04, AYS: added quick estimate of the duration of the data set
+;   2014-02-05, AYS: added quick estimate of the duration of the data set
 
 
 ;Utility function to unwrap a wrapping clock
