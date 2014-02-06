@@ -16,6 +16,7 @@
 ;   offset  optional - shift the above vertical lines by this many milliseconds
 ;   fit     keyword - perform a fit to get the oscillation period and offset
 ;           function is P[0]+P[1]*SIN(2*!PI*(X-P[2])/P[3])*EXP(-(X-P[2])/P[4])
+;   sumglitch   includes glitched events (normally excluded)
 ;   _extra  all other keywords are passed through to the plot call
 ;
 ; OUTPUTS:
@@ -29,18 +30,32 @@
 ; HISTORY:
 ;   2014-01-14, AYS: initial release
 ;   2014-01-23, AYS: ignore zeros when fitting
+;   2014-02-04, AYS: added rejection (default) and inclusion (optional) of glitched events
 
-pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit,params=params
+pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit,params=params,sumglitch=sumglitch
 
 delta = (event-shift(event,1))[1:*]/5d4 ; milliseconds
+
+z = adc[channel,*]
+; if glitched events are to be included, erase the sign bit
+if keyword_set(sumglitch) then begin
+  z = z and 32767
+endif else begin
+  use = where(z LT 32768, nuse)
+  if nuse GT 0 then begin
+    print,"Channel "+num2str(channel)+" is "+num2str(100-100.*nuse/n_elements(z))+"% glitched events"
+    z = z[use]
+    delta = delta[use]
+  endif
+endelse
 
 x = histogram(delta,min=0,reverse_indices=r,bin=0.01)
 
 y = x
-for i=0,n_elements(x)-1 do y[i] = r[i] ne r[i+1] ? mean(adc[channel,r[r[i]:r[i+1]-1]+1]) : 0
+for i=0,n_elements(x)-1 do y[i] = r[i] ne r[i+1] ? mean(z[r[r[i]:r[i+1]-1]+1]) : 0
 
 dy = x
-for i=0,n_elements(x)-1 do dy[i] = r[i] ne r[i+1] ? stddev(adc[channel,r[r[i]:r[i+1]-1]+1]) : 0
+for i=0,n_elements(x)-1 do dy[i] = r[i] ne r[i+1] ? stddev(z[r[r[i]:r[i+1]-1]+1]) : 0
 
 t = findgen(n_elements(x))*0.01
 
