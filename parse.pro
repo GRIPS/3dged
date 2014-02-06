@@ -22,6 +22,7 @@
 ;   2013-07-30, AYS: fixed bug with older formats
 ;   2013-07-31, AYS: fixed wrapping of incrementing counter at 8192, added keyword use_trigger_flag
 ;   2013-12-06, AYS: added swapshort keyword
+;   2014-02-05, AYS: added quick estimate of the duration of the data set
 
 
 ;Utility function to unwrap a wrapping clock
@@ -113,6 +114,7 @@ if nasics gt 1 then begin
     for j=0,63 do time.(i)[j,*] = unwrap(event.(i),time.(i)[j,*])*(time.(i)[j,*] ne 0)
     event.(i) = unwrap(event.(i),event.(i))
     index.(i) = unwrap(index.(i),index.(i),step=8192)
+    print,"ASIC "+num2str(list_asics[i])+", duration of "+num2str((max(event.(i))-min(event.(i)))/5d7)+" seconds"
   endfor
 endif else begin
   data = adc
@@ -130,6 +132,8 @@ endif else begin
   time = trigger_time
   for i=0,63 do time[i,*] = unwrap(event_raw,time[i,*])*(time[i,*] ne 0)
   event = unwrap(event_raw,event_raw)
+
+  print,"Single ASIC, duration of "+num2str((max(event)-min(event))/5d7)+" seconds"
 
 endelse
 
