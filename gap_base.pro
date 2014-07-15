@@ -31,7 +31,7 @@
 ;   2014-01-14, AYS: initial release
 ;   2014-01-23, AYS: ignore zeros when fitting
 ;   2014-02-05, AYS: added rejection (default) and inclusion (optional) of glitched events
-;   2014-07-15, AYS: switched timing to 10-ns ticks (100 MHz clock)
+;   2014-07-15, AYS: switched timing to 10-ns ticks (100 MHz clock), shortened fit duration
 
 pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit,params=params,sumglitch=sumglitch
 
@@ -65,8 +65,8 @@ plot,t,y,xr=[0,10],$
 
 if keyword_set(fit) then begin
   index = min(where(y gt 0))
-  yy = y[index:1000]
-  dyy = dy[index:1000]
+  yy = y[index:400]
+  dyy = dy[index:400]
   use = where(yy gt 0 and dyy gt 0)
   yy = yy[use]
   dyy = dyy[use]
