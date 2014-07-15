@@ -6,7 +6,7 @@
 ;
 ; INPUTS:
 ;   adc     64xN array of raw ADC values (not actually used yet)
-;   event   N array of event times in 50 MHz clock units
+;   event   N array of event times in ticks of 10 ns
 ;   channel specific channel to look at (not actually used yet)
 ;   deadtime    keyword - displays the deadtime
 ;   _extra  all other keywords are passed through to the plot call
@@ -15,10 +15,11 @@
 ;
 ; HISTORY:
 ;   2014-01-14, AYS: initial release
+;   2014-07-15, AYS: switched timing to 10-ns ticks (100 MHz clock)
 
 pro gap_rate,adc,event,channel,deadtime=deadtime,_extra=_extra
 
-delta = (event-shift(event,1))[1:*]/5d4 ; milliseconds
+delta = (event-shift(event,1))[1:*]/1d5 ; milliseconds
 
 x = histogram(delta,min=0,bin=0.01)
 

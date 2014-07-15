@@ -7,11 +7,12 @@
 ;   filename  name of the CSV file
 ;   use_trigger_flag  keyword - uses the trigger flag to mask out stale timestamps for channels that didn't actually trigger
 ;   swapshort  keyword - fixes a bug in GSE output where the event timestamp has swapped shorts (2 bytes)
+;   oldtime   keyword - input file has old time step of 20 ns rather than new time step of 10 ns (automatically true if swapshort is true)
 ;
 ; OUTPUTS:
 ;   data      64xN array of raw ADC values
-;   time      64xN array of trigger times in 50 MHz clock units (divide by 50d6 to get seconds)
-;   event     optional - N array of event times in 50 MHz clock units
+;   time      64xN array of trigger times in ticks of 10 ns
+;   event     optional - N array of event times in ticks of 10 ns
 ;   index     optional - N array of incrementing counter
 ;   *** If there are multiple ASICs in the file, then all the above are structures! ***
 ;
@@ -23,6 +24,7 @@
 ;   2013-07-31, AYS: fixed wrapping of incrementing counter at 8192, added keyword use_trigger_flag
 ;   2013-12-06, AYS: added swapshort keyword
 ;   2014-02-05, AYS: added quick estimate of the duration of the data set
+;   2014-07-15, AYS: switched timing to 10-ns ticks (100 MHz clock), added oldtime keyword for older files
 
 
 ;Utility function to unwrap a wrapping clock
@@ -42,7 +44,9 @@ endif else return,clock2
 end
 
 
-pro parse, filename, data, time, event=event, index=index, use_trigger_flag=use_trigger_flag, swapshort=swapshort
+pro parse, filename, data, time, event=event, index=index, use_trigger_flag=use_trigger_flag, swapshort=swapshort, oldtime=oldtime
+
+if keyword_set(swapshort) then oldtime = 1
 
 csvfile = (file_search(filename, count=count))[0]
 if count eq 0 then begin
@@ -111,10 +115,18 @@ if nasics gt 1 then begin
     time = create_struct('asic_'+num2str(list_asics[i]),trigger_time[*,use],time)
   endfor
   for i=0,nasics-1 do begin
-    for j=0,63 do time.(i)[j,*] = unwrap(event.(i),time.(i)[j,*])*(time.(i)[j,*] ne 0)
-    event.(i) = unwrap(event.(i),event.(i))
-    index.(i) = unwrap(index.(i),index.(i),step=8192)
-    print,"ASIC "+num2str(list_asics[i])+", duration of "+num2str((max(event.(i))-min(event.(i)))/5d7)+" seconds"
+    if keyword_set(oldtime) then begin
+      for j=0,63 do time.(i)[j,*] = 2*unwrap(event.(i),time.(i)[j,*])*(time.(i)[j,*] ne 0)
+      event.(i) = 2*unwrap(event.(i),event.(i))
+      index.(i) = unwrap(index.(i),index.(i),step=8192)
+    endif else begin
+      for j=0,63 do begin
+        event.(i) = unwrap(event.(i),event.(i))
+        to_modify = where(time.(i)[j,*] gt 0)
+        time.(i)[j,to_modify] += event.(i)[to_modify]
+      endfor
+    endelse
+    print,"ASIC "+num2str(list_asics[i])+", duration of "+num2str((max(event.(i))-min(event.(i)))*1d-8)+" seconds"
   endfor
 endif else begin
   data = adc
@@ -130,10 +142,10 @@ endif else begin
   ;endif
 
   time = trigger_time
-  for i=0,63 do time[i,*] = unwrap(event_raw,time[i,*])*(time[i,*] ne 0)
-  event = unwrap(event_raw,event_raw)
+  for i=0,63 do time[i,*] = 2*unwrap(event_raw,time[i,*])*(time[i,*] ne 0)
+  event = 2*unwrap(event_raw,event_raw)
 
-  print,"Single ASIC, duration of "+num2str((max(event)-min(event))/5d7)+" seconds"
+  print,"Single ASIC, duration of "+num2str((max(event)-min(event))*1d-8)+" seconds"
 
 endelse
 

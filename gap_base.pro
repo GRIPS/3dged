@@ -9,9 +9,9 @@
 ; possible from background.
 ;
 ; INPUTS:
-;   adc     64xN array of raw ADC values (not actually used yet)
-;   event   N array of event times in 50 MHz clock units
-;   channel specific channel to look at (not actually used yet)
+;   adc     64xN array of raw ADC values
+;   event   N array of event times in ticks of 10 ns
+;   channel specific channel to look at
 ;   period  optional - plot vertical lines with a spacing in milliseconds
 ;   offset  optional - shift the above vertical lines by this many milliseconds
 ;   fit     keyword - perform a fit to get the oscillation period and offset
@@ -31,10 +31,11 @@
 ;   2014-01-14, AYS: initial release
 ;   2014-01-23, AYS: ignore zeros when fitting
 ;   2014-02-05, AYS: added rejection (default) and inclusion (optional) of glitched events
+;   2014-07-15, AYS: switched timing to 10-ns ticks (100 MHz clock)
 
 pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit,params=params,sumglitch=sumglitch
 
-delta = (event-shift(event,1))[1:*]/5d4 ; milliseconds
+delta = (event-shift(event,1))[1:*]/1d5 ; milliseconds
 
 z = adc[channel,*]
 ; if glitched events are to be included, erase the sign bit
