@@ -31,24 +31,33 @@
 ;   2014-01-14, AYS: initial release
 ;   2014-01-23, AYS: ignore zeros when fitting
 ;   2014-02-05, AYS: added rejection (default) and inclusion (optional) of glitched events
-;   2014-07-15, AYS: switched timing to 10-ns ticks (100 MHz clock), shortened fit duration
+;   2014-07-15, AYS: switched timing to 10-ns ticks (100 MHz clock), shortened fit duration, remove missing conversions
 
 pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit,params=params,sumglitch=sumglitch
 
 delta = (event-shift(event,1))[1:*]/1d5 ; milliseconds
 
 z = adc[channel,*]
+
 ; if glitched events are to be included, erase the sign bit
+use = where(z LT 32768, nuse)
+print,"Channel "+num2str(channel)+" is "+num2str(100-100.*nuse/n_elements(z))+"% glitched events"
 if keyword_set(sumglitch) then begin
   z = z and 32767
 endif else begin
-  use = where(z LT 32768, nuse)
   if nuse GT 0 then begin
-    print,"Channel "+num2str(channel)+" is "+num2str(100-100.*nuse/n_elements(z))+"% glitched events"
     z = z[use]
     delta = delta[use]
   endif
 endelse
+
+;Remove missing conversions (from an intermittent connection or early abort)
+use = where(z NE 32767, nuse)
+print,"Channel "+num2str(channel)+" is "+num2str(100-100.*nuse/n_elements(z))+"% missing conversions"
+if nuse GT 0 then begin
+  z = z[use]
+  delta = delta[use]
+endif
 
 x = histogram(delta,min=0,reverse_indices=r,bin=0.01)
 
