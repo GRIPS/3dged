@@ -1,15 +1,50 @@
 Analysis code for GRIPS 3D-GeDs
 ===============================
 
-Example workflow
-================
+Example workflow (after June 2014)
+==================================
+
+See the example workflow for data files prior to June 2014 for explanations of each step.
+The difference with recent data files is that they always contain data from at least two ASICs,
+and thus the parsed data are structures of arrays.
+
+```
+; Ba-133 data with ASIC 0 and 1, triggering channels are 0-56 and 1-4
+parse,'data/2014_07_03_12_16_12_000.csv',adc,time,event=event ; contains ASIC 0 and 1
+
+gap_rate,adc.asic_0,event.asic_0,/deadtime
+gap_rate,adc.asic_1,event.asic_1,/deadtime ; same as ASIC 0 because both ASICs are read at the same time
+
+; example non-triggering channels
+gap_base,adc.asic_0,event.asic_0,50,yr=[1400,1600]
+gap_base,adc.asic_1,event.asic_1,2,yr=[1500,1700]
+
+list_0 = [50, 53, 56, 57, 59, 60, 62, 63]
+make_spectra,adc.asic_0,time.asic_0,raw_0,cms_0,channels=list_0
+
+list_1 = [1, 3, 4, 6, 7, 9, 12, 13, 27, 29, 34, 36, 38, 40, 44, 46, 50, 51, 53, 54, 56, 57, 59, 60, 62]
+make_spectra,adc.asic_1,time.asic_1,raw_1,cms_1,channels=list_1
+
+roi,cms_0[56,*],xr=[0,1000],/ylog
+energy_0_56 = getgain([114,267,696,800],[0,81,303,356])
+roi,cms_0[56,*],gain=energy_0_56,xr=[0,400],/ylog
+; FWHM is 2.5 keV at the 81 keV line
+
+roi,cms_1[4,*],xr=[0,1000],/ylog
+energy_1_4 = getgain([99,259,705,814],[0,81,303,356])
+roi,cms_1[4,*],gain=energy_1_4,xr=[0,400],/ylog
+; FWHM is 2.8 keV at the 81 keV line
+```
+
+Example workflow (before June 2014)
+===================================
 
 Read in the data
 ----------------
 ```
 parse,'data/2014_01_07_16_11_51_000.csv',adc,time,event=event,/swapshort
 ```
-The `swapshort` keyword is needed to fix certain GSE files.
+The `swapshort` keyword is needed to fix GSE files and compensate for a subsequent change in the time step.
 
 Look for good channels
 ----------------------
