@@ -1,7 +1,7 @@
 Analysis code for GRIPS 3D-GeDs
 ===============================
 
-Example workflow (after June 2014)
+Example workflow (starting with June 2014)
 ==================================
 
 See the example workflow for data files prior to June 2014 for explanations of each step.

@@ -2,12 +2,12 @@
 ;
 ; PURPOSE:
 ; Plots the variation of triggered ADC conversions over time
-; Currently assumes no more than two ASICs, and assumes they are ASIC0 and ASIC1
+; Currently only looks at the first two ASICs, and assumes they are ASIC0 and ASIC1
 ; Typically used on don't-wait-for-trigger data, where all channels "trigger"
 ;
 ; INPUTS:
-;   adc     64xN array of raw ADC values
-;   time    64xN array of trigger times in ticks of 10 ns
+;   adc     structure of 64xN arrays of raw ADC values
+;   time    structure of 64xN arrays of trigger times in ticks of 10 ns
 ;   duration    duration in ms to plot (defaults to 300 ms)
 
 pro overtime_all,adc,time,duration
