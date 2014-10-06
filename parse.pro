@@ -122,8 +122,10 @@ if nasics gt 1 then begin
     endif else begin
       for j=0,63 do begin
         event.(i) = unwrap(event.(i),event.(i))
+        ;Use the top 64-16=48 bits of the event time for the trigger time
+        ;TODO: detect and fix clock rollovers
         to_modify = where(time.(i)[j,*] gt 0)
-        time.(i)[j,to_modify] += event.(i)[to_modify]
+        time.(i)[j,to_modify] += event.(i)[to_modify] and not ulong64(65535)
       endfor
     endelse
     print,"ASIC "+num2str(list_asics[i])+", duration of "+num2str((max(event.(i))-min(event.(i)))*1d-8)+" seconds"
