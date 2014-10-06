@@ -8,6 +8,7 @@
 ;   use_trigger_flag  keyword - uses the trigger flag to mask out stale timestamps for channels that didn't actually trigger
 ;   swapshort  keyword - fixes a bug in GSE output where the event timestamp has swapped shorts (2 bytes)
 ;   oldtime   keyword - input file has old time step of 20 ns rather than new time step of 10 ns (automatically true if swapshort is true)
+;   collapse  keyword - kludge for when channels on each ASIC are split across multiple lines (data packets)
 ;
 ; OUTPUTS:
 ;   data      64xN array of raw ADC values
@@ -44,7 +45,7 @@ endif else return,clock2
 end
 
 
-pro parse, filename, data, time, event=event, index=index, use_trigger_flag=use_trigger_flag, swapshort=swapshort, oldtime=oldtime
+pro parse, filename, data, time, event=event, index=index, use_trigger_flag=use_trigger_flag, swapshort=swapshort, oldtime=oldtime, collapse=collapse
 
 if keyword_set(swapshort) then oldtime = 1
 
@@ -102,6 +103,24 @@ if format_c then begin
 endif
 
 if nasics gt 1 then begin
+  for i=0,nasics-1 do begin
+    use = where(asic eq list_asics[i])
+    if keyword_set(collapse) then begin
+      list = [0]
+      for k=1,n_elements(event_raw[use])-1 do begin
+        if event_raw[use[k]] eq event_raw[use[k-1]] then begin
+          list = [list, use[k]]
+          adc[*,use[k-1]] += adc[*,use[k]]
+          trigger_time[*,use[k-1]] += trigger_time[*,use[k]]
+          k += 1 ;skip ahead because only looking for pairs
+        endif
+      endfor
+      list = list[1:*]
+      asic[list] = 255 ;set to an invalid ASIC number
+      print,"Removing "+num2str(n_elements(list))+" events from "+num2str(n_elements(use))
+    endif
+  endfor
+
   use = where(asic eq list_asics[nasics-1])
   data = create_struct('asic_'+num2str(list_asics[nasics-1]),adc[*,use])
   index = create_struct('asic_'+num2str(list_asics[nasics-1]),index_raw[use])
