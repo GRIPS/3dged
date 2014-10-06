@@ -59,7 +59,7 @@ if nuse GT 0 then begin
   delta = delta[use]
 endif
 
-x = histogram(delta,min=0,reverse_indices=r,bin=0.01)
+x = histogram(delta,min=0,max=1000,reverse_indices=r,bin=0.01)
 
 y = x
 for i=0,n_elements(x)-1 do y[i] = r[i] ne r[i+1] ? mean(z[r[r[i]:r[i+1]-1]+1]) : 0
