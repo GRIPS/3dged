@@ -26,6 +26,8 @@
 ;   2013-12-06, AYS: added swapshort keyword
 ;   2014-02-05, AYS: added quick estimate of the duration of the data set
 ;   2014-07-15, AYS: switched timing to 10-ns ticks (100 MHz clock), added oldtime keyword for older files
+;   2014-10-06, AYS: fixed bug with timestamp reconstruction, added collapse keyword
+;   2014-11-17, AYS: protection added for collapsing data packets with duplicated channels
 
 
 ;Utility function to unwrap a wrapping clock
@@ -110,7 +112,11 @@ if nasics gt 1 then begin
       for k=1,n_elements(event_raw[use])-1 do begin
         if event_raw[use[k]] eq event_raw[use[k-1]] then begin
           list = [list, use[k]]
-          adc[*,use[k-1]] += adc[*,use[k]]
+          if (k eq 1) then begin
+            flag = adc[*,use[0]] ne 0 and adc[*,use[1]] ne 0
+            if total(flag) gt 0 then print,"Warning: ASIC "+num2str(list_asics[i])+" has these channels doubled:",where(flag)
+          endif
+          adc[*,use[k-1]] = adc[*,use[k-1]] > adc[*,use[k]]
           trigger_time[*,use[k-1]] += trigger_time[*,use[k]]
           k += 1 ;skip ahead because only looking for pairs
         endif
