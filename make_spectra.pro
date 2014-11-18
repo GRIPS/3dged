@@ -30,16 +30,18 @@ maxcms = fcheck(maxcms,3000)
 raw = fltarr(64,maxraw)
 cms = fltarr(64,maxcms+100)
 
+adc0 = reform(adc)
+
 ;Default is to use the channels that have any signal whatsoever
-channels = fcheck(channels, where(adc[*,0] ne 65535))
+channels = fcheck(channels, where(adc0[*,0] ne 65535))
 
 if keyword_set(sumglitch) then begin
   adc2 = adc and 32767
 endif else begin
   ;Skip events where any of the specified channels has a glitched event
-  use = where(total(adc[channels,*] GE 32768,1) EQ 0)
-  print,"Discarding "+num2str(100-100.*n_elements(use)/(size(adc))[2])+"% of events due to glitches"
-  adc2 = adc[*,use]
+  use = where(total(adc0[channels,*] GE 32768,1) EQ 0)
+  print,"Discarding "+num2str(100-100.*n_elements(use)/(size(adc0))[2])+"% of events due to glitches"
+  adc2 = adc0[*,use]
 endelse
 
 for i=0,n_elements(channels)-1 do begin

@@ -37,7 +37,7 @@ pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit
 
 delta = (event-shift(event,1))[1:*]/1d5 ; milliseconds
 
-z = adc[channel,*]
+z = (reform(adc))[channel,*]
 
 ; if glitched events are to be included, erase the sign bit
 use = where(z LT 32768, nuse)
