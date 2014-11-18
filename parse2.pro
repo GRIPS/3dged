@@ -9,7 +9,7 @@
 ; OUTPUTS:
 ;   adc       8x64xN array of raw ADC values
 ;   time      8x64xN array of trigger times in ticks of 10 ns
-;   event     optional - 2xN array of event times in ticks of 10 ns
+;   event     2xN array of event times in ticks of 10 ns
 ;   id        optional - N array of incrementing counter
 ;
 ; HISTORY:
@@ -43,7 +43,7 @@ return, out
 end
 
 
-pro parse2, filename, adc, time, event=event, id=id
+pro parse2, filename, adc, time, event, id=id
 
 csvfile = (file_search(filename, count=count))[0]
 if count eq 0 then begin
@@ -84,6 +84,10 @@ for k=0l,num-1 do begin
   for i=0,n_elements(working)-1 do begin
     loc = where(xasic eq working[i] and xid eq id[k], found)
     if found gt 0 then begin
+      if found gt 1 then begin
+        print, "Warning: ID rollover not fixed!"
+        loc = loc[0]
+      endif
       adc[i, *, k] = xadc[*, loc]
       event[i/4, k] = xevent[loc]
 
@@ -102,6 +106,7 @@ endfor
 
 ;Remove questionable events
 num = total(keep)
+id = id[where(keep)]
 adc = adc[*, *, where(keep)]
 time = time[*, *, where(keep)]
 event = event[*, where(keep)]
