@@ -62,13 +62,16 @@ xtrigger = decode64(data.(2))
 xevent = ulong64(ulong(data.(3))) ;TODO: should this be unwrapped?
 
 xtime = ulon64arr(64, lines)
-for i=0,63 do begin
-  xtime[i,*] = data.(i+5)
+left = (where(header eq '0'))[0]
+right = (where(header eq '63'))[0]
+for i=left,right do begin
+  xtime[uint(header[i]),*] = data.(i)
 endfor
 
 xadc = uintarr(64, lines)
-;Start at 71 to skip REF channel, and ignore the last column, which is empty
-for i=71,n_elements(header)-2 do begin
+left = (reverse(where(header eq '0')))[0]
+right = (reverse(where(header eq '63')))[0]
+for i=left,right do begin
   xadc[uint(header[i]),*] = data.(i)
 endfor
 
