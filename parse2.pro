@@ -14,6 +14,7 @@
 ;
 ; HISTORY:
 ;   2014-11-18, AYS: initial release
+;   2014-11-19, AYS: can now read files where ASIC channels (columns) have been removed
 
 
 ;Utility function to unwrap a wrapping clock
@@ -61,11 +62,14 @@ xtrigger = decode64(data.(2))
 xevent = ulong64(ulong(data.(3))) ;TODO: should this be unwrapped?
 
 xtime = ulon64arr(64, lines)
-xadc = uintarr(64, lines)
 for i=0,63 do begin
   xtime[i,*] = data.(i+5)
-  ;Skip over REF channel
-  xadc[i,*] = data.(i+71)
+endfor
+
+xadc = uintarr(64, lines)
+;Start at 71 to skip REF channel, and ignore the last column, which is empty
+for i=71,n_elements(header)-2 do begin
+  xadc[uint(header[i]),*] = data.(i)
 endfor
 
 working = where(histogram(xasic, min=0, max=7))
