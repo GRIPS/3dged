@@ -73,7 +73,7 @@ for i=71,n_elements(header)-2 do begin
 endfor
 
 working = where(histogram(xasic, min=0, max=7))
-print, "Detected ASICs:", working
+print, "  Detected ASICs:", working, format='(A, 8I2)'
 
 id = xid[uniq(xid)]
 num = n_elements(id)
@@ -89,7 +89,7 @@ for k=0l,num-1 do begin
     loc = where(xasic eq working[i] and xid eq id[k], found)
     if found gt 0 then begin
       if found gt 1 then begin
-        print, "Warning: ID rollover not fixed!"
+        print, "Warning: duplicate IDs encountered!"
         loc = loc[0]
       endif
       adc[i, *, k] = xadc[*, loc]
@@ -114,9 +114,8 @@ adc = adc[*, *, where(keep)]
 time = time[*, *, where(keep)]
 event = event[*, where(keep)]
 
-print,num2str(long(num)) + " events over " + num2str((event[0, num-1] - event[0, 0])*1d-8) + " seconds"
+print,"  " + num2str(long(num)) + " complete events over " + num2str((event[0, num-1] - event[0, 0])*1d-8) + " seconds"
 
-print,"Normal conversions: " + num2str(long(total(adc gt 0 and adc lt 32768)))
-print,"Glitched conversions: " + num2str(long(total(adc ge 32768)))
+print,"  Conversions: " + num2str(long(total(adc gt 0 and adc lt 32767))) + " valid and " + num2str(long(total(adc ge 32768))) + " glitched"
 
 end
