@@ -58,7 +58,7 @@ data = read_csv(csvfile, count=lines, header=header)
 xasic = byte(data.(0))
 xid = ulong(data.(1)) ;TODO: should this be unwrapped?
 xtrigger = decode64(data.(2))
-xevent = ulong64(ulong(data.(3))) ;TODO: unwrapping is difficult because the clocks aren't synced
+xevent = ulong64(ulong(data.(3))) ;TODO: should this be unwrapped?
 
 xtime = ulon64arr(64, lines)
 xadc = uintarr(64, lines)
@@ -94,8 +94,7 @@ for k=0l,num-1 do begin
       time[i, *, k] = xtime[*, loc]
       ;Use the top 64-16=48 bits of the event time for the trigger time
       ;TODO: detect and fix clock rollovers
-      ;TODO: fix to allow for zero timestamps! use trigger flag!
-      to_modify = where(time[i, *, k] gt 0)
+      to_modify = where(xtrigger[*, loc])
       time[i, to_modify, k] += event[i/4, k] and not ulong64(65535)
     endif else begin
       print,"Warning: event " + num2str(id[k]) + " is missing data from ASIC " + num2str(working[i])
