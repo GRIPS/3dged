@@ -57,9 +57,10 @@ print, "Parsing ", csvfile
 data = read_csv(csvfile, count=lines, header=header)
 
 xasic = byte(data.(0))
-xid = ulong(data.(1)) ;TODO: should this be unwrapped?
+xid = ulong(data.(1))
+xid = ulong(unwrap(xid, xid, step=65536))
 xtrigger = decode64(data.(2))
-xevent = ulong64(ulong(data.(3))) ;TODO: should this be unwrapped?
+xevent = ulong64(data.(3))
 
 xtime = ulon64arr(64, lines)
 left = (where(header eq '0'))[0]
