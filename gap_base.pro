@@ -18,6 +18,7 @@
 ;           function is P[0]+P[1]*SIN(2*!PI*(X-P[2])/P[3])*EXP(-(X-P[2])/P[4])
 ;   sumglitch   keyword - includes glitched events (normally excluded)
 ;   corrplot    keyword - underlay a correlation plot of the actual data
+;   tmax    keyword - maximum time (ms) since preceding conversion to plot (default: 10)
 ;   _extra  all other keywords are passed through to the plot call
 ;
 ; OUTPUTS:
@@ -33,9 +34,11 @@
 ;   2014-01-23, AYS: ignore zeros when fitting
 ;   2014-02-05, AYS: added rejection (default) and inclusion (optional) of glitched events
 ;   2014-07-15, AYS: switched timing to 10-ns ticks (100 MHz clock), shortened fit duration, remove missing conversions
-;   2014-11-25, AYS: added corrplot keyword, fixed bug with removing events
+;   2014-11-25, AYS: added corrplot keyword, fixed bug with removing events, added tmax keyword
 
-pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit,params=params,sumglitch=sumglitch,corrplot=corrplot
+pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit,params=params,sumglitch=sumglitch,corrplot=corrplot,tmax=tmax
+
+tmax = fcheck(tmax, 10)
 
 delta = (event-shift(event,1))[1:*]/1d5 ; milliseconds
 
@@ -61,7 +64,7 @@ if nuse GT 0 then begin
   delta = delta[use]
 endif
 
-x = histogram(delta,min=0,max=1000,reverse_indices=r,bin=0.01)
+x = histogram(delta,min=0,max=tmax*100,reverse_indices=r,bin=0.01)
 
 y = x
 for i=0,n_elements(x)-1 do y[i] = r[i] ne r[i+1] ? mean(z[r[r[i]:r[i+1]-1]]) : 0
@@ -72,11 +75,11 @@ for i=0,n_elements(x)-1 do dy[i] = r[i] ne r[i+1] ? stddev(z[r[r[i]:r[i+1]-1]]) 
 t = findgen(n_elements(x))*0.01
 
 if keyword_set(corrplot) then begin
-  corrplot,delta*100,z,xr=[0,1000],xstyle=4,ystyle=4,$
+  corrplot,delta*10,z,xr=[0,tmax*10],xstyle=4,ystyle=4,$
     xtitle='Milliseconds since previous event',ytitle='Raw ADC',_extra=_extra
 endif
 
-plot,t,y,xr=[0,10],noerase=(keyword_set(corrplot) ? 1 : 0),$
+plot,t,y,xr=[0,tmax],noerase=(keyword_set(corrplot) ? 1 : 0),$
   xtitle='Milliseconds since previous event',ytitle='Raw ADC',_extra=_extra
 
 if keyword_set(fit) then begin
@@ -86,7 +89,7 @@ if keyword_set(fit) then begin
   use = where(yy gt 0 and dyy gt 0)
   yy = yy[use]
   dyy = dyy[use]
-  tt = (t[index:1000])[use]
+  tt = (t[index:*])[use]
 
   start = [1300., 150., 0.2, 1.07, 3.5]
   pp = mpfitexpr('P[0]+P[1]*SIN(2*!PI*(X-P[2])/P[3])*EXP(-(X-P[2])/P[4])', tt, yy, dyy, start, /quiet)
