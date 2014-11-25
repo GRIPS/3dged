@@ -37,7 +37,7 @@ pro gap_base,adc,event,channel,period=period,offset=offset,_extra=_extra,fit=fit
 
 delta = (event-shift(event,1))[1:*]/1d5 ; milliseconds
 
-z = (reform(adc))[channel,*]
+z = (reform(adc))[channel,1:*]
 
 ; if glitched events are to be included, erase the sign bit
 use = where(z LT 32768, nuse)
@@ -62,10 +62,10 @@ endif
 x = histogram(delta,min=0,max=1000,reverse_indices=r,bin=0.01)
 
 y = x
-for i=0,n_elements(x)-1 do y[i] = r[i] ne r[i+1] ? mean(z[r[r[i]:r[i+1]-1]+1]) : 0
+for i=0,n_elements(x)-1 do y[i] = r[i] ne r[i+1] ? mean(z[r[r[i]:r[i+1]-1]]) : 0
 
 dy = x
-for i=0,n_elements(x)-1 do dy[i] = r[i] ne r[i+1] ? stddev(z[r[r[i]:r[i+1]-1]+1]) : 0
+for i=0,n_elements(x)-1 do dy[i] = r[i] ne r[i+1] ? stddev(z[r[r[i]:r[i+1]-1]]) : 0
 
 t = findgen(n_elements(x))*0.01
 
