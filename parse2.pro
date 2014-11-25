@@ -89,26 +89,24 @@ time = ulon64arr(8, 64, num)
 event = ulon64arr(2, num)
 
 for k=0l,num-1 do begin
-  for i=0,n_elements(working)-1 do begin
-    loc = where(xasic eq working[i] and xid eq id[k], found)
-    if found gt 0 then begin
-      if found gt 1 then begin
-        print, "Warning: duplicate IDs encountered!"
-        loc = loc[0]
-      endif
-      adc[i, *, k] = xadc[*, loc]
-      event[i/4, k] = xevent[loc]
+  set = where(xid eq id[k], found)
+  if found eq n_elements(working) then begin
+    for l=0,found-1 do begin
+      iline = set[l]
+      iasic = xasic[iline]
+      adc[iasic, *, k] = xadc[*, iline]
+      event[iasic/4, k] = xevent[iline]
 
-      time[i, *, k] = xtime[*, loc]
+      time[iasic, *, k] = xtime[*, iline]
       ;Use the top 64-16=48 bits of the event time for the trigger time
       ;TODO: detect and fix clock rollovers
-      to_modify = where(xtrigger[*, loc], ntriggers)
-      if ntriggers gt 0 then time[i, to_modify, k] += event[i/4, k] and not ulong64(65535)
-    endif else begin
-      print,"Warning: event " + num2str(id[k]) + " is missing data from ASIC " + num2str(working[i])
-      keep[k] = 0
-    endelse
-  endfor
+      to_modify = where(xtrigger[*, iline], ntriggers)
+      if ntriggers gt 0 then time[iasic, to_modify, k] += event[iasic/4, k] and not ulong64(65535)
+    endfor
+  endif else begin
+    print,"Warning: event " + num2str(id[k]) + " is missing data from some ASICs"
+    keep[k] = 0
+  endelse
 endfor
 
 ;Remove questionable events
