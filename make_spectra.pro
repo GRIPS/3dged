@@ -33,7 +33,7 @@ cms = fltarr(64,maxcms+100)
 adc0 = reform(adc)
 
 ;Default is to use the channels that have any signal whatsoever
-channels = fcheck(channels, where(adc0[*,0] ne 65535))
+channels = fcheck(channels, where(adc0[*,0] ne 32767 and adc0[*,0] ne 0))
 
 if keyword_set(sumglitch) then begin
   adc2 = adc and 32767
