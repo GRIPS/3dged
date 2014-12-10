@@ -58,7 +58,17 @@ data = read_csv(csvfile, count=lines, header=header)
 
 xasic = byte(data.(0))
 xid = ulong(data.(1))
-xid = ulong(unwrap(xid, xid, step=65536))
+
+;Event IDs need to be unwrapped on a per-ASIC basis
+for iasic=0,7 do begin
+  ;TODO: can combine with later detection of working ASICs
+  use = where(xasic eq iasic, nuse)
+  if nuse gt 0 then begin
+    temp = ulong(unwrap(xid[use], xid[use], step=65536))
+    xid[use] = temp
+  endif
+endfor
+
 xtrigger = decode64(data.(2))
 xevent = ulong64(data.(3))
 
@@ -79,7 +89,8 @@ endfor
 working = where(histogram(xasic, min=0, max=7))
 print, "  Detected ASICs:", working, format='(A, 8I2)'
 
-id = xid[uniq(xid)]
+temp = xid[sort(xid)]
+id = temp[uniq(temp)]
 num = n_elements(id)
 keep = bytarr(num)+1
 keep[num-1] = 0 ;remove the last event since it's likely corrupted
