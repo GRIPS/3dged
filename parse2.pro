@@ -70,7 +70,14 @@ for iasic=0,7 do begin
 endfor
 
 xtrigger = decode64(data.(2))
-xevent = ulong64(data.(3))
+
+;Event timestamp may not auto-detect as 64-bit integers
+if data_type(data.(3)) eq 3 then begin ;detected as signed long
+  xevent = ulong(data.(3))
+  xevent = unwrap(xevent, xevent)
+endif else begin
+  xevent = ulong64(data.(3))
+endelse
 
 xtime = ulon64arr(64, lines)
 left = (where(header eq '0'))[0]
