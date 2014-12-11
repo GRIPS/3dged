@@ -5,6 +5,8 @@
 ;
 ; INPUTS:
 ;   filename  name of the CSV file
+;   lv        keyword - only look at LV-side ASICs (0-3), recommended for non-coincident data
+;   hv        keyword - only look at HV-side ASICs (4-7), recommended for non-coincident data
 ;
 ; OUTPUTS:
 ;   adc       8x64xN array of raw ADC values
@@ -15,6 +17,7 @@
 ; HISTORY:
 ;   2014-11-18, AYS: initial release
 ;   2014-11-19, AYS: can now read files where ASIC channels (columns) have been removed
+;   2014-12-10, AYS: fixed some bugs and added keywords to allow for looking at just one side (e.g., for non-coincident data)
 
 
 ;Utility function to unwrap a wrapping clock
@@ -44,7 +47,7 @@ return, out
 end
 
 
-pro parse2, filename, adc, time, event, id=id
+pro parse2, filename, adc, time, event, id=id, lv=lv, hv=hv
 
 csvfile = (file_search(filename, count=count))[0]
 if count eq 0 then begin
@@ -95,6 +98,27 @@ endfor
 
 working = where(histogram(xasic, min=0, max=7))
 print, "  Detected ASICs:", working, format='(A, 8I2)'
+if keyword_set(lv) and not keyword_set(hv) then begin
+  working = working[where(working le 3)]
+  print, "  Using just LV ASICs:", working, format='(A, 4I2)'
+  use = where(xasic le 3)
+  xasic = xasic[use]
+  xid = xid[use]
+  xtrigger = xtrigger[*, use]
+  xevent = xevent[use]
+  xtime = xtime[*, use]
+  xadc = xadc[*, use]
+endif else if keyword_set(hv) and not keyword_set(lv) then begin
+  working = working[where(working ge 4)]
+  print, "  Using just HV ASICs:", working, format='(A, 4I2)'
+  use = where(xasic ge 4)
+  xasic = xasic[use]
+  xid = xid[use]
+  xtrigger = xtrigger[*, use]
+  xevent = xevent[use]
+  xtime = xtime[*, use]
+  xadc = xadc[*, use]
+endif
 
 temp = xid[sort(xid)]
 id = temp[uniq(temp)]
