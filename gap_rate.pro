@@ -9,6 +9,7 @@
 ;   event   N array of event times in ticks of 10 ns
 ;   channel specific channel to look at (not actually used yet)
 ;   deadtime    keyword - displays the deadtime
+;   tmax    keyword - maximum time (ms) since preceding conversion to plot (default: 10)
 ;   _extra  all other keywords are passed through to the plot call
 ;
 ; OUTPUTS:
@@ -16,16 +17,19 @@
 ; HISTORY:
 ;   2014-01-14, AYS: initial release
 ;   2014-07-15, AYS: switched timing to 10-ns ticks (100 MHz clock)
+;   2014-12-13, AYS: added tmax keyword
 
-pro gap_rate,adc,event,channel,deadtime=deadtime,_extra=_extra
+pro gap_rate,adc,event,channel,deadtime=deadtime,tmax=tmax,_extra=_extra
+
+tmax = fcheck(tmax, 10)
 
 delta = (event-shift(event,1))[1:*]/1d5 ; milliseconds
 
-x = histogram(delta,min=0,bin=0.01)
+x = histogram(delta,min=0,max=tmax*100,bin=0.01)
 
 yrange = fcheck(yrange, [1,max(x)])
 
-plot,findgen(n_elements(x))*0.01,x,xr=[0,10],yrange=yrange,/ylog,$
+plot,findgen(n_elements(x))*0.01,x,xr=[0,tmax],yrange=yrange,/ylog,$
   xtitle='Milliseconds since previous event',ytitle='Counts',_extra=_extra
 
 if keyword_set(deadtime) then begin
