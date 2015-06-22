@@ -8,9 +8,22 @@ Now, the data files consistently have all eight ASICs, so arrays are used instea
 
 ```
 parse2,'data/2015_06_18_19_46_44_000.csv',adc,time,event,id=id
-gap_rate,adc[0,*,*],event[0,*,*],/deadtime,/corrplot
-gap_base,adc[0,*,*],event[0,*,*],7 ; example non-triggering channel
+
+channels_converting = total(adc ne 0 and adc ne 32767, 3) gt 0
+channels_triggering = total(time ne 0, 3) gt 0
+
+gap_rate,adc[0,*,*],event[0,*,*],/deadtime
+gap_base,adc[0,*,*],event[0,*,*],7,/corrplot ; example non-triggering channel
+
 corrplot,adc[0,7,*],adc[0,12,*],xrange=[1400,1900],yrange=[1400,1900],/xy
+
+; here are some ASIC 0 channels with similar baseline behavior
+list = [7, 12, 14]
+
+make_spectra,adc[0,*,*],time[0,*,*],raw,cms,channels=list
+
+roi,cms[12,*],xrange=[0,500],/ylog
+
 ```
 
 Example workflow (starting with June 2014)
