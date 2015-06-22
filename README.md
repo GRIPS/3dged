@@ -1,8 +1,20 @@
 Analysis code for GRIPS 3D-GeDs
 ===============================
 
+Example workflow (starting with November 2014)
+==============================================
+
+Now, the data files consistently have all eight ASICs, so arrays are used instead of structures.  Plus, the data files are "compressed" in that unused ASIC channels are not used.
+
+```
+parse2,'data/2015_06_18_19_46_44_000.csv',adc,time,event,id=id
+gap_rate,adc[0,*,*],event[0,*,*],/deadtime,/corrplot
+gap_base,adc[0,*,*],event[0,*,*],7 ; example non-triggering channel
+corrplot,adc[0,7,*],adc[0,12,*],xrange=[1400,1900],yrange=[1400,1900],/xy
+```
+
 Example workflow (starting with June 2014)
-==================================
+==========================================
 
 See the example workflow for data files prior to June 2014 for explanations of each step.
 The difference with recent data files is that they always contain data from at least two ASICs,
